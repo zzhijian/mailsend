@@ -1,0 +1,15 @@
+{
+    "name": "patpatweb/mail",
+    "authors": [
+        {
+            "name": "zhijian",
+            "email": "zhijian.zhang@patpat.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "PatpatWeb\\Mail\\": "src/"
+        }
+    }
+}
