@@ -39,14 +39,14 @@
             /* [disabled]line-height: 1.8; */
             text-align: center;
             /*padding: 40px 20px 0px 20px;*/
-        }
+          }
         .subcontent{
             font-size: 22px;
             color: rgba(68,68,68,1.00);
             /* [disabled]line-height: 1.8; */
             text-align: center;
             padding: 30px 20px 20px 20px;
-        }
+          }
         .maincontent{
             font-size: 14px;
             color: rgba(68,68,68,1.00);
@@ -59,7 +59,7 @@
             color: rgba(68,68,68,1.00);
             /* [disabled]line-height: 1.8; */
             text-align: left;
-        }
+         }
         .summarycontent{
             font-size: 14px;
             color: rgba(68,68,68,1.00);
