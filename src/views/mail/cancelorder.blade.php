@@ -174,9 +174,9 @@
                                             <tr>
                                                 <td>
                                                     <span class="billtitle" style="font-size: 22px;color:#f46159;">Shipped to:</span>
-                                                    <p class="billcontent">{{$delivery_name}} {{$delivery_lastname}}</p>
-                                                    <p class="billcontent">{{$delivery_street_address}} </p>
-                                                    <p class="billcontent">{{$delivery_suburb ? $delivery_suburb . ', ' : ''}}{{$delivery_city}}, {{$delivery_state}}, {{$delivery_postcode}}, {{$delivery_country}}</p>
+                                                    <p class="billcontent">{{$delivery_info->delivery_name}} {{$delivery_info->delivery_lastname}}</p>
+                                                    <p class="billcontent">{{$delivery_info->delivery_street_address}} </p>
+                                                    <p class="billcontent">{{$delivery_info->delivery_suburb ? $delivery_info->delivery_suburb . ', ' : ''}}{{$delivery_info->delivery_city}}, {{$delivery_info->delivery_state}}, {{$delivery_info->delivery_postcode}}, {{$delivery_info->delivery_country}}</p>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -226,9 +226,38 @@
                                                 <td>
                                                     <table class="responsive-table" width="100%" cellspacing="0" cellpadding="0" align="left">
                                                         <tbody>
-                                                            {{--<!--item row begin-->--}}
-                                                            {!! $order_list !!}
-                                                            {{--<!--item row end-->--}}
+                                                        @foreach($order_list as $key => $value)
+                                                        <tr>
+                                                            <td>
+                                                                <table width="100px"  cellspacing="0" cellpadding="0" align="left">
+                                                                    <!-- Table container for image -->
+                                                                    <tbody>
+                                                                    <tr>
+                                                                        <td align="left" style="padding:20px 20px 20px 0px;">
+                                                                            <img src="{{$value->icon}}/120x120" alt="sample" width="100" height="100" >
+                                                                        </td>
+                                                                    </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                                <table width="400px"  cellspacing="0" cellpadding="0" align="left">
+                                                                    <!-- Table container for content -->
+                                                                    <tbody>
+
+                                                                    <tr>
+                                                                        <td class="itemcontent">
+                                                                           {{$value->product_name}}
+                                                                            <p>Quantity: {{$value->quantity }}</p>
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    <tr style="font-size:14px;">
+                                                                        <td style="color:#a0a4a5">Single Price: ${{$v1alue->single_price }}</td>
+                                                                    </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        @endforeach
                                                         </tbody>
                                                     </table>
                                                 </td>

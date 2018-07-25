@@ -135,7 +135,7 @@
 
                                                         <p class="maincontent" style="font-size:14px; color:#666; margin-top:15px; line-height:22px;">Once your order is shipped, you will receive another email with all of the information you will need to track your package. Due to the
                                                             current high volume of orders, we are experiencing brief delays with some shipments. Please allow up to 30 business days for delivery.</p>
-                                                        @if(!$is_sign_up && $return_money > 0)
+                                                        @if(!$is_guest && $return_money > 0)
                                                             <p class="maincontent" style="font-size:14px; color:#666; margin-top:15px; line-height:22px;">We are excited to tell you that you’ve earned ${{ $return_money }} Cashback from this order.
                                                             <a href="{{ $register_url }}">Join us</a> with email <a href="{{ $register_url }}">{{ $email }}</a> to get your Cashback right now!
                                                         @endif
@@ -148,21 +148,8 @@
                                                         <p class="maincontent" style="font-size:14px; color:#666; margin-top:15px; line-height:22px;">Sincerely,</p>
                                                         <p class="maincontent" style="font-size:14px; color:#666; margin-top:15px; line-height:22px;">PatPat</p>
                                                         @if($is_guest == 0)
-                                                            {{--@if($email_account)--}}
-                                                                {{--<p class="maincontent" style="margin-top: 30px;font-size: 14px;">--}}
-                                                                    {{--To better track your order, please visit the following link and sign in to your PatPat account <br /> ( {{$track_url}} ).--}}
-                                                                {{--</p>--}}
-                                                            {{--@else--}}
-                                                                {{--<p class="maincontent" style="margin-top: 30px;font-size: 14px;">--}}
-                                                                    {{--To better track your order, please visit the following link and create your PatPat account  <br /> ( {{$track_url}} ).--}}
-                                                                {{--</p>--}}
-                                                            {{--@endif--}}
                                                             <a style="display: block; width: 160px; height: 30px;text-align: center;line-height: 30px;color: #fff;border-radius: 5px; margin: 10px auto;background: #f1435a;font-size: 14px;text-decoration: none;"
                                                                 href="https://www.patpat.com/guest/order/{{$track_order_id}}">Track Your Order</a>
-                                                        @else
-                                                            {{--<p class="maincontent" style="margin-top: 30px;font-size: 14px;">--}}
-                                                                {{--To better track your order, please sign in to your PatPat account.--}}
-                                                            {{--</p>--}}
                                                         @endif
                                                         <br />
                                                     </td>
@@ -187,9 +174,9 @@
                                                 <tr>
                                                     <td>
                                                         <span class="billtitle" style="color:#f46159;">Shipped to:</span>
-                                                        <p class="maincontent">{{$delivery_name}} {{$delivery_lastname}}</p>
-                                                        <p class="maincontent">{{$delivery_street_address}} </p>
-                                                        <p class="maincontent">{{$delivery_suburb ? $delivery_suburb . ', ' : ''}}{{$delivery_city}}, {{$delivery_state}}, {{$delivery_postcode}}, {{$delivery_country}}</p>
+                                                        <p class="maincontent">{{$delivery_info->delivery_name}} {{$delivery_info->delivery_lastname}}</p>
+                                                        <p class="maincontent">{{$delivery_info->delivery_street_address}} </p>
+                                                        <p class="maincontent">{{$delivery_info->delivery_suburb ? $delivery_info->delivery_suburb . ', ' : ''}}{{$delivery_info->delivery_city}}, {{$delivery_info->delivery_state}}, {{$delivery_info->delivery_postcode}}, {{$delivery_info->delivery_country}}</p>
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -235,7 +222,37 @@
                                         <!-- Table container for each image and description in catalog -->
                                             <tbody>
                                             <!--item row begin-->
-                                            {!! $order_list !!}
+                                            @foreach($order_list as $value)
+                                            <tr>
+                                                <td>
+                                                    <table width="100px"  cellspacing="0" cellpadding="0" align="left">
+                                                        <!-- Table container for image -->
+                                                        <tbody>
+                                                        <tr>
+                                                            <td align="left" style="padding:20px 20px 20px 0px;">
+                                                                <img src="{{$value->image_url}}/120x120" alt="sample" width="100" height="100" >
+                                                            </td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <table width="400px"  cellspacing="0" cellpadding="0" align="left">
+                                                        <!-- Table container for content -->
+                                                        <tbody>
+                                                        <tr>
+                                                            <td class="itemcontent" style="padding-top: 19px;">
+                                                                {{$value->product_name}}
+                                                                <p>Quantity: {{$value->quantity}} </p>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr style="font-size:14px;">
+                                                            <td style="color:#a0a4a5">Single Price: ${{$value->single_price }}</td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            @endforeach
                                             <!--item row end-->
                                             </tbody>
                                         </table>
@@ -290,9 +307,9 @@
                                                             <tbody>
                                                                 <tr>
                                                                     <td>
-                                                                        <span tyle="font-size:14px;">{{$total_pay}}</span>
-                                                                        <p tyle="font-size:14px;">{{$tax}}</p>
-                                                                        <p tyle="font-size:14px;">{{$shipping_fee}}</p>
+                                                                        <span style="font-size:14px;">{{$total_pay}}</span>
+                                                                        <p style="font-size:14px;">{{$tax}}</p>
+                                                                        <p style="font-size:14px;">{{$shipping_fee}}</p>
                                                                     </td>
                                                                 </tr>
                                                             </tbody>

@@ -216,7 +216,40 @@
 
 
                                         <!--item row begin-->
-                                        {{$order_list}}
+                                        <tr>
+                                            <td>
+                                                <table width='100px'  cellspacing='0' cellpadding='0' align='left'>
+                                                    <!-- Table container for image -->
+                                                    <tbody>
+                                                    <tr>
+                                                        <td align='left' style='padding:20px 20px 20px 0px;'><img src='" . {{$product->icon}} . "/120x120' alt='sample' width='100' height='100' ></td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                                <table width='400px'  cellspacing='0' cellpadding='0' align='left'>
+                                                    <!-- Table container for content -->
+                                                    <tbody>
+
+                                                    <tr>
+                                                        <td class='itemcontent'>
+                                                            " . {{$product->product_name}} . "
+                                                            <p>Cash back: $" . $cashback . "</p>
+                                                            <p>Order status: Placed  (It is unavailiabel now, you can use it after the order turn into processing) </p>
+                                                        </td>
+                                                    </tr>
+
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+
+                                        <tr><td style='font-size: 0; line-height: 0;' height='1'>
+                                                <table width='100%' align='center'  cellpadding='0' cellspacing='0'>
+                                                    <tr><td style='font-size: 0; line-height: 0;border-bottom:1px solid #f2f2f2;' height='1'>&nbsp;</td></tr></table></td></tr>
+
+
+
+
                                         <!--item row end-->
 
 

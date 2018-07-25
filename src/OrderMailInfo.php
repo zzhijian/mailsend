@@ -14,54 +14,102 @@ use Illuminate\Support\Facades\DB;
 class OrderMailInfo
 {
 
-
-    public static function getOrderDelivery($order_id)
+    public static function getOrder($order_id)
     {
-        $data = DB::table('oms_orders')
-            ->leftjoin('mb_user_delivery', 'oms_orders.delivery_id', '=', 'mb_user_delivery.id')
-            ->leftjoin('oms_shipping_country_mode', 'oms_orders.delivery_mode_id', '=', 'oms_shipping_country_mode.id')
-            ->where('oms_orders.id', $order_id)
-            ->first();
-        return $data ?: '';
+        return DB::table('oms_orders')->find($order_id);
+    }
+
+    public static function getOrderDelivery($delivery_id)
+    {
+        return DB::table('mb_user_delivery')->find($delivery_id);
     }
 
     public static function getUserInfo($user_id)
     {
-        return DB::table('sys_customers')->useWritePdo()->find($user_id) ?: null;
+        return DB::table('sys_customers')->find($user_id);
     }
 
+    public static function getOrderBilling($billing_id)
+    {
+        return DB::table("mb_user_billing")->find($billing_id);
+    }
 
-    public static function get_order_product_list($orderId)
+    public static function getProduct($product_id){
+        return DB::table("oms_products")->find($product_id);
+    }
+
+    public static function getSkuImage($sku_id)
+    {
+        $sku = DB::table('oms_product_sku')
+            ->select('product_id', 'image')
+            ->where('id', $sku_id)
+            ->first();
+        if ($sku && $sku->image) {
+            $image = $sku->image;
+        } else {
+            $product = DB::table('oms_products')
+                ->select('icon')
+                ->where('id', $sku->product_id)
+                ->first();
+            $image = $product->icon;
+        }
+        return $image;
+    }
+
+    public static function getSmsMessage($sms_id){
+        return DB::table('sms_message')->useWritePdo()->find($sms_id);
+    }
+
+    public static function getCashbackByOrderId($order_id){
+        $cashback = DB::table('mb_wallet_credit_record')->useWritePdo()
+            ->where('order_id', $order_id)
+            ->where('record_type', 'activity_cashback')
+            ->where('product_id', 0)
+            ->where('referral_id', 0)
+            ->value('total');
+        return isset($cashback) ? $cashback : 0;
+    }
+
+    public static function getOrderProductList($orderId)
     {
         $products = DB::table('oms_order_sku')
-            ->leftjoin('oms_product_sku', 'oms_order_sku.sku_id', '=', 'oms_product_sku.id')
-            ->leftjoin('oms_products', 'oms_product_sku.product_id', '=', 'oms_products.id')
             ->select(
-                'oms_products.product_name', 'oms_products.brand', 'oms_products.icon',
-                'oms_order_sku.event_id', 'oms_order_sku.product_id', 'oms_order_sku.order_id',
-                'oms_order_sku.sku_id', 'oms_order_sku.current_status', 'oms_order_sku.id',
-                'oms_order_sku.order_quantity AS quantity', 'oms_order_sku.final_price AS order_price',
-                'oms_order_sku.single_price AS single_price', 'oms_order_sku.shipping_fee AS shipping_fee',
-                'oms_order_sku.updated_at',
-                'oms_product_sku.msrp'
+                "'' as product_name", "'' as brand", "'' as icon",
+                "oms_order_sku.event_id", "oms_order_sku.product_id", "oms_order_sku.order_id",
+                "oms_order_sku.sku_id", "oms_order_sku.current_status", "oms_order_sku.id",
+                "oms_order_sku.order_quantity AS quantity", "oms_order_sku.final_price AS order_price",
+                "oms_order_sku.single_price AS single_price", "oms_order_sku.shipping_fee AS shipping_fee",
+                "oms_order_sku.updated_at","'0' as msrp"
             )
             ->where('oms_order_sku.order_id', '=', $orderId)
             ->where("is_bundle",'!=',2)
             ->get();
-
         $sku_ids = [];
         $product_ids = [];
-        foreach ($products as $key => $product) {
-            $products[$key]->updated_at = date('d-m-Y', strtotime($products[$key]->updated_at));
+        foreach ($products as $key => &$product) {
+            //sku
+            $pdt_sku = DB::table("oms_product_sku")
+                ->select('oms_product_sku.product_id','oms_product_sku.msrp')
+                ->find($product->sku_id);
+            $product->msrp = $pdt_sku->msrp;
+            //product
+            $pdt = DB::table("oms_products")
+                ->select('oms_products.product_name', 'oms_products.brand', 'oms_products.icon')
+                ->find($pdt_sku->product_id);
+            $product->product_name = $pdt->product_name;
+            $product->brand = $pdt->brand;
+            $product->icon = $pdt->icon;
+            $product->updated_at = date('d-m-Y', strtotime($product->updated_at));
+
             $sku_ids[] = $product->sku_id;
             $product_ids[] = $product->product_id;
-
             //判断是否存在映射关系，如果存在则拆分sku信息
             $order_sku_maps = DB::table('oms_order_sku_map')
                 ->where('order_id', $product->order_id)
                 ->where('sku_id', $product->sku_id)
                 ->where('event_id', $product->event_id)
-                ->select('sku_id', 'num', 'option_value_id')->get();
+                ->select('sku_id', 'num', 'option_value_id')
+                ->get();
             if ($order_sku_maps) {
                 $order_sku_map_qty = array_sum(array_pluck($order_sku_maps, 'num'));
                 foreach ($order_sku_maps as $order_sku_map) {
@@ -83,7 +131,6 @@ class OrderMailInfo
                     }
                 }
             }
-
         }
 
         if (count($products)) {
@@ -101,20 +148,7 @@ class OrderMailInfo
                 ->whereIn('oms_sku_option_value.sku_id', $sku_ids)
                 ->orderBy('oms_option_values.display_order', 'asc')
                 ->get();
-            $product_comments = DB::table('mb_user_comments')
-                ->selectRaw('product_id')
-                ->where('order_id', $orderId)
-                ->whereIn('product_id', $product_ids)
-                ->orderBy('product_id')
-                ->orderBy("comment_score","desc")
-                ->get();
-
             foreach ($products as $product) {
-                $option_value = ProductsService::getSkuOptionValue($product->sku_id);
-                $product->offer_id = $product->sku_id . ($option_value ? '-en-USD-' . $option_value : '-en-USD');
-                $product->category_name = ProductsService::getCategoryNameByProductId($product->product_id);
-                $product->option = [];
-                $product->has_comment = false;
                 foreach ($sku_options as $sku_option) {
                     //去掉引用调用，防止值覆盖
                     $sku_option = clone $sku_option;
@@ -122,21 +156,20 @@ class OrderMailInfo
                         $product->option[] = $sku_option;
                         //判断尺码是否存在尺码映射，如果存在则转换尺码属性值
                         if (($sku_option->option_name == 'Size') && isset($product->option_value_id)) {
-                            $new_size_option_value = DB::table('oms_option_values')->where('id', $product->option_value_id)->first();
+                            $new_size_option_value = DB::table('oms_option_values')
+                                ->where('id', $product->option_value_id)
+                                ->first();
                             if ($new_size_option_value) {
                                 $sku_option->option_value = $new_size_option_value->value;
                             }
                         }
-                        $order_sku_ext = DB::table('oms_order_sku_ext')->select('image_url')->where('order_sku_id', $product->id)->value('image_url');
+                        $order_sku_ext = DB::table('oms_order_sku_ext')
+                            ->select('image_url')
+                            ->where('order_sku_id', $product->id)
+                            ->value('image_url');
                         if ($order_sku_ext) {
                             $product->icon = $order_sku_ext;
                         }
-                        $product->icon = cdn_url($product->icon);
-                    }
-                }
-                foreach ($product_comments as $product_comment) {
-                    if ($product->product_id == $product_comment->product_id) {
-                        $product->has_comment = true;
                     }
                 }
             }
@@ -144,14 +177,7 @@ class OrderMailInfo
         return $products;
     }
 
-    public static function getOrderBilling($order_id)
-    {
-        $data = DB::table('oms_orders')->useWritePdo()
-            ->leftjoin('mb_user_billing', 'oms_orders.billing_id', '=', 'mb_user_billing.id')
-            ->where('oms_orders.id', $order_id)
-            ->first();
-        return $data ?: '';
-    }
+
 
 
 
